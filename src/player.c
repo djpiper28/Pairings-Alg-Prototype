@@ -39,19 +39,35 @@ int free_player(player_t *p) {
 	return status;
 }
 
+// Used for qsort()
+static int compare_players(const void *a, const void *b) {
+	player_t *pa = (player_t *) a;
+	player_t *pb = (player_t *) b;
+
+	return pa->elo - pb->elo;
+}
+
 int pair_players(player_t *p, int len, int match_size, player_pairings_t *out) {
 	int status = 1;
-	int max = len % match_size;
+	int max = len / match_size;
 	int paired = 0;
 	int *player_is_paired = malloc(sizeof * player_is_paired * len);
+	if (player_is_paired == NULL) {
+		return 0;
+	} else {
+		memset(player_is_paired, 0, sizeof * player_is_paired * len);
+	}
 
 	out->match_size = match_size;
-	out->length = paired;
+	out->length = max;
+	out->not_paired = len - (max * match_size);
 
-	out->players_not_paired = malloc(sizeof * out->players_not_paired * len - max);
-	status |= out->players_not_paired != NULL;
+	if (out->not_paired != 0) {
+		out->players_not_paired = malloc(sizeof * out->players_not_paired * out->not_paired);
+		status |= out->players_not_paired != NULL;
+	}
 	
-	if (status) {
+	if (status) {		
 		out->player_pairings = malloc(sizeof * out->player_pairings * max);
 		status |= out->player_pairings != NULL;
 
@@ -65,12 +81,39 @@ int pair_players(player_t *p, int len, int match_size, player_pairings_t *out) {
 	}
 	
 	if (status) {
+		// Sort the players by elo
+		qsort(p, len, sizeof * p, compare_players);
+		
+		// TOOD: Use a less niave paired algorithm
+		// Create pairings
+		int top = 0;
 		while (paired < max) {
-					
-		}	
+			// Get a pairing
+			player_t *pair_ptr = out->player_pairings[paired];
+			int j = 0;
+			for (int i = top; i < len; i++) {
+				copy_player(&pair_ptr[j], &p[i]);
+				
+				j++;
+				top++;
+			}
+
+			paired++;
+		}
+
+		// Create array of unpaired
+		int i, offset;
+		for (i = offset = 0; i < len && offset < out->not_paired; i++) {
+			if (!player_is_paired[i]) {
+				copy_player(&out->players_not_paired[offset], &p[i]);
+				offset++;
+			}
+		}
 	} else {
 		free_pairings(out);
 	}
+
+	free(player_is_paired);
 
 	return status;
 }

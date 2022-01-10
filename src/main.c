@@ -49,12 +49,20 @@ int main(int argc, char **argv)
 	  int res = pair_players(p, players, match_size, &pairings);
 
 	  if (res) {
+			fprintf(stderr, "Successfully paired %ld\n", pairings.length);
+	  	
 			for (int i = 0; i < pairings.length; i++) {
-				printf("Match #%d Players: ", i); 
+				printf("Match #%03d Players: ", i); 
 				for (int j = 0; j < pairings.match_size; j++) {
 					player_t plr = pairings.player_pairings[i][j];
 					char *p_name = plr.player_name;
-					printf("%s%s", p_name, j - 1 == pairings.match_size ? "\n" : ", ");
+					printf("%s", p_name);
+					
+					if (j + 1 == pairings.match_size) {
+						printf("\n");
+					} else {
+						printf(", ");
+					}
 				}
 			}
 
