@@ -57,6 +57,7 @@ int main(int argc, char **argv)
 		
   	player_pairings_t pairings;  	
 	  int res = pair_players(p, players, match_size, &pairings);
+	  float avg = 0;
 
 	  if (res) {
 			fprintf(stderr, "Successfully paired %d\n", pairings.length);
@@ -86,6 +87,7 @@ int main(int argc, char **argv)
 				}
 
 				avg_difference /= c;
+				avg += avg_difference;
 				printf("Averageg elo delta: %3.3f\n", avg_difference);
 			}
 
@@ -93,6 +95,9 @@ int main(int argc, char **argv)
 				player_t plr = pairings.players_not_paired[i];
 				printf("%s is not paired\n", plr.player_name);
 			}
+
+			avg /= pairings.length;
+			printf("The average elo delta is %3.3f\n", avg);
 		} else {
 			fprintf(stderr, "An error occurred pairing the players\n");
 		}
