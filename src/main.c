@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 		char buffer[1024];
 		int elo = abs(rand()) % 3000;
 
-		snprintf(buffer, 1024, "Player-%d", i);
+		snprintf(buffer, 1024, "Player-%03d", i);
 		status = init_player(&p[i], buffer, elo);
 		if (!status) {
 			players = i + 1;
