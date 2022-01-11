@@ -65,19 +65,24 @@ int pair_players(player_t *p, int len, int match_size, player_pairings_t *out) {
 	if (out->not_paired != 0) {
 		out->players_not_paired = malloc(sizeof * out->players_not_paired * out->not_paired);
 		status |= out->players_not_paired != NULL;
+	} else {
+		out->players_not_paired = NULL;
 	}
 	
 	if (status) {		
-		out->player_pairings = malloc(sizeof * out->player_pairings * max);
-		status |= out->player_pairings != NULL;
+		out->players_paired = malloc(sizeof * out->players_paired * max);
+		status |= out->players_paired != NULL;
+	}
 
-		if (status) {
-			int i = 0;	
-			for (; status && i < max; i++) {
-				out->player_pairings[i] = malloc(sizeof ** out->player_pairings * match_size);
-				status |= out->player_pairings[i] != NULL;
-			}
+	if (status) {
+		for (int i = 0; status && i < max; i++) {
+			status |= init_paired_match(&out->players_paired[i], match_size);			
 		}
+	}
+	
+	// Create an array of all possible pairings
+	if (status) {
+	
 	}
 	
 	if (status) {
@@ -88,14 +93,10 @@ int pair_players(player_t *p, int len, int match_size, player_pairings_t *out) {
 		// Create pairings
 		int top = 0;
 		while (paired < max) {
-			// Get a pairing
-			player_t *pair_ptr = out->player_pairings[paired];
-			int j = 0;
-			for (int i = top; i < len; i++) {
-				copy_player(&pair_ptr[j], &p[i]);
-				
-				j++;
-				top++;
+			paired_match_t *match = &out->players_paired[paired];
+			for (int i = 0; i < match_size; i++, top++) {
+				player_t *plr = &p[top];
+				status |= copy_player(&match->players[i], plr);
 			}
 
 			paired++;
@@ -120,21 +121,17 @@ int pair_players(player_t *p, int len, int match_size, player_pairings_t *out) {
 
 int free_pairings(player_pairings_t *p) {
 	int status = 1;
-	if (p->player_pairings != NULL) {
+	if (p->players_paired != NULL) {
 		for (int i = 0; i < p->length; i++) {
 			for (int j = 0; j < p->length; j++) {
-				player_t player = p->player_pairings[i][j];
+				player_t player = p->players_paired[i].players[j];
 				free_player(&player);
 			}
 
-			if (p->player_pairings[i] != NULL) {
-				free(p->player_pairings[i]);
-			} else {
-				status = 0;
-			}
+			free_paired_match(&p->players_paired[i]);
 		}
 		
-		free(p->player_pairings);
+		free(p->players_paired);
 	} else {
 		status = 0;
 	}
@@ -147,6 +144,7 @@ int free_pairings(player_pairings_t *p) {
 				status = 0;
 			}
 		}
+		
 		free(p->players_not_paired);
 	} else {
 		status = 0;
@@ -155,6 +153,25 @@ int free_pairings(player_pairings_t *p) {
 	p->match_size = 0;
 	p->length = 0;
 	p->not_paired = 0;
+
+	return status;
+}
+
+int init_paired_match(paired_match_t *m, int len) {
+	m->length = len;
+	m->players = malloc(sizeof * m->players * len);
+
+	return m->players != NULL;
+}
+
+int free_paired_match(paired_match_t *m) {
+	int status = 1;
+	
+	if (m->players == NULL) {
+		status = 0;
+	} else {
+		free(m->players);
+	}
 
 	return status;
 }

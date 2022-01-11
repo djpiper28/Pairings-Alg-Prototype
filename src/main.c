@@ -1,8 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 #include <jemalloc/jemalloc.h>
 #include "player.h"
+
+float fact(float n) {
+	float r = 1;
+	for (float i = 1; i <= n; i++) {
+		r *= i;
+	}
+
+	return r;
+}
 
 int main(int argc, char **argv)
 {
@@ -49,21 +59,34 @@ int main(int argc, char **argv)
 	  int res = pair_players(p, players, match_size, &pairings);
 
 	  if (res) {
-			fprintf(stderr, "Successfully paired %ld\n", pairings.length);
+			fprintf(stderr, "Successfully paired %d\n", pairings.length);
+			float c = fact(match_size) / (2 * fact(match_size - 2));
 	  	
 			for (int i = 0; i < pairings.length; i++) {
-				printf("Match #%03d Players: ", i); 
-				for (int j = 0; j < pairings.match_size; j++) {
-					player_t plr = pairings.player_pairings[i][j];
-					char *p_name = plr.player_name;
-					printf("%s", p_name);
+				printf("Match #%03d Players: ", i);
+				paired_match_t *match = &pairings.players_paired[i];
+				
+				for (int j = 0; j < match->length; j++) {
+					player_t plr = match->players[j];
+					printf("%s(%d)", plr.player_name, plr.elo);
 					
 					if (j + 1 == pairings.match_size) {
-						printf("\n");
+						printf(" ");
 					} else {
 						printf(", ");
+					} 
+				}
+
+				// Print average elo difference
+				float avg_difference = 0;
+				for (int i = 0; i < match->length; i++) {
+					for (int j = i + 1; j < match->length; j++, c++) {
+						avg_difference += match->players[i].elo - match->players[j].elo;						
 					}
 				}
+
+				avg_difference /= c;
+				printf("Average elo difference is %3.3f\n", avg_difference);
 			}
 
 			for (int i = 0; i < pairings.not_paired; i++) {
