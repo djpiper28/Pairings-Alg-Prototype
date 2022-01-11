@@ -44,7 +44,7 @@ static int compare_players(const void *a, const void *b) {
 	player_t *pa = (player_t *) a;
 	player_t *pb = (player_t *) b;
 
-	return pa->elo - pb->elo;
+	return pb->elo - pa->elo;
 }
 
 int pair_players(player_t *p, int len, int match_size, player_pairings_t *out) {
@@ -94,6 +94,8 @@ int pair_players(player_t *p, int len, int match_size, player_pairings_t *out) {
 		int top = 0;
 		while (paired < max) {
 			paired_match_t *match = &out->players_paired[paired];
+
+			// Check that the players have not been against each other??
 			for (int i = 0; i < match_size; i++, top++) {
 				player_t *plr = &p[top];
 				status |= copy_player(&match->players[i], plr);
