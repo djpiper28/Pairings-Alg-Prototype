@@ -123,11 +123,6 @@ int free_pairings(player_pairings_t *p) {
 	int status = 1;
 	if (p->players_paired != NULL) {
 		for (int i = 0; i < p->length; i++) {
-			for (int j = 0; j < p->length; j++) {
-				player_t player = p->players_paired[i].players[j];
-				free_player(&player);
-			}
-
 			free_paired_match(&p->players_paired[i]);
 		}
 		
@@ -170,6 +165,9 @@ int free_paired_match(paired_match_t *m) {
 	if (m->players == NULL) {
 		status = 0;
 	} else {
+		for (int i = 0; i < m->length; i++) {
+			free_player(&m->players[i]);
+		}
 		free(m->players);
 	}
 

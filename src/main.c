@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 				}
 
 				avg_difference /= c;
-				printf("Average elo difference is %3.3f\n", avg_difference);
+				printf("Averageg elo delta: %3.3f\n", avg_difference);
 			}
 
 			for (int i = 0; i < pairings.not_paired; i++) {
